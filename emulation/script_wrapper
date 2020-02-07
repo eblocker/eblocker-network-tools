@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+# script_wrapper_emulation. Call script_wrapper PROGRAMM [ARGUMENTS]
+
+# Edit 1) programs and 2) @options-variable (and maybe also the 3) default_exit_code) to configure script_wrapper's behavior
+
+# 1)
+# These programs will be executed if no return-value (i.e. return: 1) is given.
+# Any other program will be ignored, i.e. not executed and the default_exit_code is returned.
+programs = [{ name: "updates-check" },              # updates-running will be executed and its result will be returned
+            { name: "updates-running", return: 1 }, # updates-check won't be executed but 0 will be returned
+            { name: "updates-running-info" },
+            { name: "updates-download-running" },
+            { name: "updates-start" }
+]
+
+# 2)
+# Enable output to stdout and file logging, think of write permissions (e.g. at /opt/eblocker-network/bin)"
+@options = { stdout: true, 
+             file: File.expand_path(File.dirname(__FILE__) + '/script_wrapper.log')
+}
+
+# 3)
+default_exit_code = 0
+
+
+# ------------------------------------------------------------------------------------
+
+base_dir = "/opt/eblocker-icap/scripts/"
+
+def log(out)
+  output = "#{Time.now} - #{ARGV[0]}: #: #{out}"
+  puts output if @options[:stdout]
+  open(@options[:file], 'a') {|f| f << output + "\n" } if @options[:file]
+end
+
+log "Script wrapper called to execute #{ARGV[0]}."
+
+@program = programs.detect {|prog| prog[:name] == ARGV[0]}
+if @program
+  log "Exception defined for #{ARGV[0]}"
+
+  if exit_code = @program[:return]
+    log "Returning custom exit code #{exit_code}"
+    exit @program[:return]
+  else
+    fullpath = base_dir + ARGV.join(" ")
+    log "Executing #{fullpath} ..."
+    log %x{#{fullpath}}
+    exit_code = $?.exitstatus
+    log "... returning exit code #{exit_code}"
+    exit exit_code
+  end
+end
+
+log "Returning default exit code #{default_exit_code}"
+exit default_exit_code

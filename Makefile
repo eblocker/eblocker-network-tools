@@ -1,0 +1,36 @@
+TARGET_ARCH :=$(shell uname -m)
+
+all: arp_read arp_write dhcp_discover script_wrapper
+
+arp_read: arp_read.c
+	gcc -std=gnu11 -o arp_read arp_read.c -lpcap -lhiredis
+
+arp_write: arp_write.c
+	gcc -std=gnu11 -o arp_write arp_write.c -lnet -lhiredis
+
+dhcp_discover: dhcp_discover.c
+	gcc -o dhcp_discover dhcp_discover.c -lnet -lpcap
+
+script_wrapper: script_wrapper.c
+	gcc -o script_wrapper script_wrapper.c
+
+# Where to put executable commands on 'make install'?
+BIN = $(DESTDIR)/opt/eblocker-network/bin
+INITD = $(DESTDIR)/etc/init.d
+
+install: all
+	install -d $(BIN)
+	install ./arp_read $(BIN)
+	install ./arp_write $(BIN)
+	install ./dhcp_discover $(BIN)
+	install ./script_wrapper $(BIN)
+	install -d $(INITD)
+	install ./etc/arpread $(INITD)
+	install ./etc/arpwrite $(INITD)
+
+clean:
+	rm -f arp_read arp_write dhcp_discover script_wrapper
+
+package:
+	dpkg-buildpackage -us -uc
+

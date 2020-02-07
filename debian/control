@@ -1,0 +1,13 @@
+Source: eblocker-network-tools
+Section: contrib/net
+Priority: extra
+Maintainer: eBlocker Open Source UG <dev@eblocker.org>
+Build-Depends: libnet1-dev, libpcap-dev, libhiredis-dev, debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Homepage: https://github.com/eblocker/eblocker-network-tools.git
+
+Package: eblocker-network-tools
+Architecture: any
+Depends: libnet1, libpcap0.8, libhiredis0.10 | libhiredis0.13 | libhiredis0.14, ${shlibs:Depends}, ${misc:Depends}
+Description: Networking tools
+
