@@ -235,6 +235,7 @@ struct icmp6_echo_request_parameter {
 
 int icmp6_parse_nd_advert(struct icmp6_request* request, struct message_parser* parser);
 int icmp6_parse_nd_solicit(struct icmp6_request* request, struct message_parser* parser);
+int icmp6_parse_nd_router_solicit(struct icmp6_request* request, struct message_parser* parser);
 int icmp6_parse_nd_options(struct icmp6_request* request, struct message_parser* parser);
 int icmp6_parse_nd_option_prefix_info(struct message_parser* parser, struct nd_opt_prefix_info* prefix_info);
 int icmp6_parse_nd_option_rdns(struct message_parser* parser, struct nd_opt_rdns** rdns);
@@ -270,6 +271,8 @@ int icmp6_parse_request(char* message, struct icmp6_request* request) {
         return -1;
     }
     switch (request->icmp_type) {
+    case ND_ROUTER_SOLICIT:
+        return icmp6_parse_nd_router_solicit(request, &parser);
     case ND_ROUTER_ADVERT:
         return icmp6_parse_nd_advert(request, &parser);
     case ND_NEIGHBOR_SOLICIT:
@@ -337,6 +340,12 @@ int icmp6_parse_nd_solicit(struct icmp6_request* request, struct message_parser*
     if (message_parser_next_bytes(parser, 16, nd_neighbor_solicit->nd_ns_target.__in6_u.__u6_addr8)) {
         return -1;
     }
+    return icmp6_parse_nd_options(request, parser);
+}
+
+int icmp6_parse_nd_router_solicit(struct icmp6_request* request, struct message_parser* parser) {
+    struct nd_router_solicit* nd_router_solicit = malloc(sizeof(struct nd_router_solicit));
+    request->parameter = nd_router_solicit;
     return icmp6_parse_nd_options(request, parser);
 }
 
@@ -528,6 +537,7 @@ void icmp6_print_request(const struct icmp6_request* request) {
 }
 
 #define LIBNET_ICMPV6_NDP_RADV_H 16
+#define LIBNET_ICMPV6_NDP_RSOL_H 8
 #define LIBNET_PBLOCK_ICMPV6_NDP_RADV_H 0x44    /* ICMPv6 NDP neighbor advertisement header */
 // define non-public method from libnet
 libnet_ptag_t libnet_build_icmpv6_common(
@@ -598,6 +608,14 @@ void icmp6_send_packet(libnet_t* net, struct icmp6_request* request) {
         libnet_radv.retransmit_timer = htonl(router_advert->nd_ra_retransmit);
         libnet_build_icmpv6_common(request->icmp_type, 0, 0, &libnet_radv, sizeof(struct libnet_icmpv6_ndp_radv), LIBNET_PBLOCK_ICMPV6_NDP_NADV_H, NULL, 0, net, 0);
         length += LIBNET_ICMPV6_NDP_RADV_H;
+    } else if (request->icmp_type == ND_ROUTER_SOLICIT) {
+        struct libnet_icmpv6_ndp_rsol {
+            uint32_t reserved;
+        };
+        struct libnet_icmpv6_ndp_rsol libnet_rsol;
+        libnet_rsol.reserved = 0;
+        libnet_build_icmpv6_common(request->icmp_type, 0, 0, &libnet_rsol, sizeof(struct libnet_icmpv6_ndp_rsol), LIBNET_PBLOCK_ICMPV6_NDP_NSOL_H, NULL, 0, net, 0);
+        length += LIBNET_ICMPV6_NDP_RSOL_H;
     } else if (request->icmp_type == ND_NEIGHBOR_SOLICIT) {
         struct libnet_in6_addr nd_ns_target;
         memcpy(nd_ns_target.__u6_addr.__u6_addr8, ((struct nd_neighbor_solicit*) request->parameter)->nd_ns_target.__in6_u.__u6_addr8, 16);
