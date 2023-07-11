@@ -302,7 +302,7 @@ void process_icmpv6_packet(redisContext* redis_ctx, const struct pcap_pkthdr* pk
                 break;
             case ND_OPT_MTU:
                 nd_opt_mtu = (struct nd_opt_mtu*) (packet + nd_option_offset);
-                sb_printf(sb, "/%i/%u", ND_OPT_MTU, nd_opt_mtu->nd_opt_mtu_mtu);
+                sb_printf(sb, "/%i/%u", ND_OPT_MTU, ntohl(nd_opt_mtu->nd_opt_mtu_mtu));
                 break;
             case ND_OPT_RDNS:
                 nd_opt_rdns = (struct nd_opt_rdns*) nd_opt_hdr;
