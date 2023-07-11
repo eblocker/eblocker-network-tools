@@ -34,40 +34,40 @@
  */
 int main(int argc,char **argv)
 {
-  const char* basepath = "/opt/eblocker-icap/scripts/";
-  char path_input[PATH_MAX];
-  char path_real[PATH_MAX];
+    const char* basepath = "/opt/eblocker-icap/scripts/";
+    char path_input[PATH_MAX];
+    char path_real[PATH_MAX];
 
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <script> [<argument>]\n", argv[0]);
-    return 1;
-  }
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <script> [<argument>]\n", argv[0]);
+        return 1;
+    }
 
-  if (setuid(0) != 0) {
-    perror("Could not setuid(0)");
-    return 1;
-  }
+    if (setuid(0) != 0) {
+        perror("Could not setuid(0)");
+        return 1;
+    }
 
-  if (setgid(0) != 0) {
-    perror("Could not setgid(0)");
-    return 1;
-  }
+    if (setgid(0) != 0) {
+        perror("Could not setgid(0)");
+        return 1;
+    }
 
-  const char* command = argv[1];
-  strcpy(path_input, basepath);
-  strncat(path_input, argv[1], PATH_MAX - strlen(basepath) - 1);
+    const char* command = argv[1];
+    strcpy(path_input, basepath);
+    strncat(path_input, argv[1], PATH_MAX - strlen(basepath) - 1);
 
-  if (realpath(path_input, path_real) == NULL) {
-    perror("Could not get realpath");
-    return 1;
-  }
+    if (realpath(path_input, path_real) == NULL) {
+        perror("Could not get realpath");
+        return 1;
+    }
 
-  if (strncmp(path_input, path_real, PATH_MAX) != 0) {
-    fprintf(stderr, "Invalid command location\n");
-    return 1;
-  }
+    if (strncmp(path_input, path_real, PATH_MAX) != 0) {
+        fprintf(stderr, "Invalid command location\n");
+        return 1;
+    }
 
-  int retval = execvpe(path_real, argv + 1, NULL);
-  perror("Could not execute command");
-  return retval;
+    int retval = execvpe(path_real, argv + 1, NULL);
+    perror("Could not execute command");
+    return retval;
 }

@@ -74,15 +74,15 @@ static void parse_options(int argc, char** argv) {
     int c;
     while((c = getopt(argc, argv, "h:vw:")) != -1) {
         switch(c) {
-            case 'h':
-                sscanf(optarg, "%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx", &hw_addr[0], &hw_addr[1], &hw_addr[2], &hw_addr[3], &hw_addr[4], &hw_addr[5]);
-                break;
-            case 'v':
-                verbose = 1;
-                break;
-            case 'w':
-                timeout = atoi(optarg);
-                break;
+        case 'h':
+            sscanf(optarg, "%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx", &hw_addr[0], &hw_addr[1], &hw_addr[2], &hw_addr[3], &hw_addr[4], &hw_addr[5]);
+            break;
+        case 'v':
+            verbose = 1;
+            break;
+        case 'w':
+            timeout = atoi(optarg);
+            break;
         }
     }
 
