@@ -95,8 +95,6 @@ void parseAndSendPacket(libnet_t *net, char* message)
     int bytes_written = libnet_write(net);
     if (bytes_written == -1) {
         fprintf(stderr, "Error writing packet: %s\n", libnet_geterror(net));
-    } else {
-        printf("Sent %d bytes\n", bytes_written);
     }
 
     libnet_clear_packet(net);
@@ -657,8 +655,6 @@ void icmp6_send_packet(libnet_t* net, struct icmp6_request* request) {
     int bytes_written = libnet_write(net);
     if (bytes_written == -1) {
         fprintf(stderr, "Error writing packet: %s\n", libnet_geterror(net));
-    } else {
-        printf("Sent %d bytes\n", bytes_written);
     }
 
     libnet_clear_packet(net);
