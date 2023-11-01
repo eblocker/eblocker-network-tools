@@ -82,7 +82,6 @@ void packet_callback(u_char* args, const struct pcap_pkthdr* pkthdr, const u_cha
 }
 
 void redisPublish(redisContext* redis_ctx, const char* channel, const char* message) {
-    printf("Channel: %s Message: %s\n", channel, message);
     redisReply* reply = redisCommand(redis_ctx, "publish %s %s", channel, message);
     if (reply == NULL) {
         fprintf(stderr, "Failed to publish message to redis\n");
