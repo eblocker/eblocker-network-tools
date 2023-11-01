@@ -20,11 +20,11 @@ if [ "$1" = configure ] ; then
 
 # Install services:
     update-rc.d arpread defaults
-    update-rc.d arpwrite defaults
+    systemctl enable arpwrite
 
 # (Re)start services:
     invoke-rc.d arpread restart
-    invoke-rc.d arpwrite restart
+    systemctl restart arpwrite
 
 fi
 
