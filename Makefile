@@ -25,8 +25,8 @@ install: all
 	install ./dhcp_discover $(BIN)
 	install ./script_wrapper $(BIN)
 	install -d $(SYSTEMD)
-	install ./etc/arpwrite.service $(SYSTEMD)
-	install ./etc/arpread.service $(SYSTEMD)
+	install -m 644 ./etc/arpwrite.service $(SYSTEMD)
+	install -m 644 ./etc/arpread.service $(SYSTEMD)
 
 clean:
 	rm -f arp_read arp_write dhcp_discover script_wrapper
