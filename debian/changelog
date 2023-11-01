@@ -1,3 +1,9 @@
+eblocker-network-tools (2.4.3) unstable; urgency=medium
+
+  * Converted from SysVinit to systemd
+
+ -- eBlocker Open Source UG <dev@eblocker.org>  Wed, 01 Nov 2023 14:08:00 +0100
+
 eblocker-network-tools (2.4.2) unstable; urgency=medium
 
   * Support sending ICMPv6 router solicitations
