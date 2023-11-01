@@ -18,14 +18,16 @@
 
 if [ "$1" = configure ] ; then
 
-# Install services:
-    update-rc.d arpread defaults
+    # Install services:
+    systemctl enable arpread
     systemctl enable arpwrite
 
-# (Re)start services:
-    invoke-rc.d arpread restart
+    # (Re)start services:
+    systemctl restart arpread
     systemctl restart arpwrite
 
+    # Remove old logfile:
+    rm -f /var/log/eblocker/arpread.log
 fi
 
 exit 0

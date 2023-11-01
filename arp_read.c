@@ -314,7 +314,7 @@ void process_icmpv6_packet(redisContext* redis_ctx, const struct pcap_pkthdr* pk
                 }
                 break;
             default:
-                printf("ignoring unknown option: %i\n", nd_opt_hdr->nd_opt_type);
+                fprintf(stderr, "ignoring unknown option: %i\n", nd_opt_hdr->nd_opt_type);
                 break;
             }
             nd_option_offset += nd_opt_hdr->nd_opt_len * 8;

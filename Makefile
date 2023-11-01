@@ -16,7 +16,6 @@ script_wrapper: script_wrapper.c
 
 # Where to put executable commands on 'make install'?
 BIN = $(DESTDIR)/opt/eblocker-network/bin
-INITD = $(DESTDIR)/etc/init.d
 SYSTEMD = $(DESTDIR)/lib/systemd/system
 
 install: all
@@ -25,10 +24,9 @@ install: all
 	install ./arp_write $(BIN)
 	install ./dhcp_discover $(BIN)
 	install ./script_wrapper $(BIN)
-	install -d $(INITD)
-	install ./etc/arpread $(INITD)
 	install -d $(SYSTEMD)
 	install ./etc/arpwrite.service $(SYSTEMD)
+	install ./etc/arpread.service $(SYSTEMD)
 
 clean:
 	rm -f arp_read arp_write dhcp_discover script_wrapper
