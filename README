@@ -1,8 +1,0 @@
-Build a Debian package:
-
-# make package
-
-Prerequisite: the group "icapd" must exist.
-
-# addgroup icapd
-
