@@ -123,6 +123,11 @@ static pcap_t* setup_pcap(const char* device) {
         exit(1);
     }
 
+    if (pcap_set_timeout(pcap, 10) != 0) {
+        fprintf(stderr, "setting packet buffer timeout failed.\n");
+        exit(1);
+    }
+
     if (pcap_set_promisc(pcap, 0) != 0) {
         fprintf(stderr, "setting promiscous mode to false failed: %s\n", pcap_geterr(pcap));
         exit(1);
