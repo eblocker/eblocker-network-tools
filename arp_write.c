@@ -14,10 +14,10 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+#include <netinet/icmp6.h>
 #include <libnet.h>
 #include <hiredis/hiredis.h>
 #include <netinet/ether.h>
-#include <netinet/icmp6.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
@@ -237,6 +237,7 @@ int icmp6_parse_nd_router_solicit(struct icmp6_request* request, struct message_
 int icmp6_parse_nd_options(struct icmp6_request* request, struct message_parser* parser);
 int icmp6_parse_nd_option_prefix_info(struct message_parser* parser, struct nd_opt_prefix_info* prefix_info);
 int icmp6_parse_nd_option_rdns(struct message_parser* parser, struct nd_opt_rdns** rdns);
+int icmp6_parse_nd_option_route_info(struct message_parser* parser, struct nd_opt_route_info** ri);
 int icmp6_parse_echo_request(struct icmp6_request* request, struct message_parser* parser);
 
 int icmp6_parse_request(char* message, struct icmp6_request* request) {
@@ -399,6 +400,13 @@ int icmp6_parse_nd_options(struct icmp6_request* request, struct message_parser*
             }
             ((struct nd_opt_mtu*)nd_opt_hdr)->nd_opt_mtu_mtu = htonl(((struct nd_opt_mtu*)nd_opt_hdr)->nd_opt_mtu_mtu);
             break;
+        case ND_OPT_ROUTE_INFO:
+            if (icmp6_parse_nd_option_route_info(parser, (struct nd_opt_route_info**) &nd_opt_hdr)) {
+                list_free(root.next);
+                free(nd_opt_hdr);
+                return -1;
+            }
+            break;
         default:
             fprintf(stderr, "unknown option: %i\n", type);
             list_free(root.next);
@@ -481,6 +489,29 @@ int icmp6_parse_nd_option_rdns(struct message_parser* parser, struct nd_opt_rdns
             return -1;
         }
     }
+    return 0;
+}
+
+int icmp6_parse_nd_option_route_info(struct message_parser* parser, struct nd_opt_route_info** ri) {
+    size_t size = sizeof(struct nd_opt_route_info);
+    *ri = malloc(size);
+    memset(*ri, 0, size);
+    (*ri)->nd_opt_rio_type = ND_OPT_ROUTE_INFO;
+    (*ri)->nd_opt_rio_len = 1;
+    (*ri)->nd_opt_rio_prefix_len = 0;
+
+    int route_preference;
+    if (message_parser_next_int(parser, &route_preference)) {
+        return -1;
+    }
+    (*ri)->nd_opt_rio_flags_reserved = (uint8_t)(route_preference & 3) << 3;
+
+    uint32_t lifetime;
+    if (message_parser_next_int(parser, (int*) &lifetime)) {
+        return -1;
+    }
+    (*ri)->nd_opt_rio_lifetime = htonl(lifetime);
+
     return 0;
 }
 
@@ -578,6 +609,12 @@ void icmp6_send_packet(libnet_t* net, struct icmp6_request* request) {
         } else if (hdr->nd_opt_type == ND_OPT_RDNS) {
             if (libnet_build_icmpv6_ndp_opt(ND_OPT_RDNS, (uint8_t*) hdr + 2, hdr->nd_opt_len * 8 - 2, net, 0) == -1) {
                 fprintf(stderr, "error building nd rdns option: %s\n", libnet_geterror(net));
+                return;
+            }
+            length += LIBNET_ICMPV6_NDP_OPT_H + hdr->nd_opt_len * 8 - 2;
+        } else if (hdr->nd_opt_type == ND_OPT_ROUTE_INFO) {
+            if (libnet_build_icmpv6_ndp_opt(ND_OPT_ROUTE_INFO, (uint8_t*) hdr + 2, hdr->nd_opt_len * 8 - 2, net, 0) == -1) {
+                fprintf(stderr, "error building nd route info option: %s\n", libnet_geterror(net));
                 return;
             }
             length += LIBNET_ICMPV6_NDP_OPT_H + hdr->nd_opt_len * 8 - 2;
